@@ -12,7 +12,7 @@ const double IKI_PI = 6.2831853;
 const int windowWidth = 800;
 const int windowHeight = 800;
 
-char stones[8][8] = {
+char board[8][8] = {
 	{'x','x','x','x','x','x','x','x'},
 	{'b','b','b','b','b','b','b','b'},
 	{'b','b','b','b','b','b','b','b'},
@@ -26,7 +26,10 @@ int c = 0;
 
 int selectedX = -1;
 int selectedY = -1;
+int deadStoneX = -1;
+int deadStoneY = -1;
 bool turn = 0;
+bool forcedMove = 0;
 
 void drawSquare(GLint x1, GLint y1, GLint x2, GLint y2, GLint x3, GLint y3, GLint x4, GLint y4,GLboolean selected)
 {
@@ -106,23 +109,28 @@ void init(void)
 }
 void update(void)
 {
-	glClear(GL_COLOR_BUFFER_BIT);
+	//glClear(GL_COLOR_BUFFER_BIT);
 	chessboard();
 	GLint x, y;
 	
 	for (y = 0; y < 8; y++) {
 		for (x = 0;x < 8; x++) {
-			if (stones[y][x] == 'b') {
+			if (board[y][x] == 'b') {
 				glColor3f(1.0f, 1.0f, 1.0f);
 				drawStone(x*100+50, y*100+50, 35);
 			}
-			else if (stones[y][x] == 's') {
+			else if (board[y][x] == 's') {
 				glColor3f(0.0f, 0.0f, 0.0f);
 				drawStone(x * 100 + 50, y * 100 + 50, 35);
 			}
 
-			else if (stones[y][x] == 'o') {
+			else if (board[y][x] == 'o') {
 				glColor3f(0.2f, 0.7f, 0.2f);
+				drawStone(x * 100 + 50, y * 100 + 50, 20);
+			}
+
+			else if (board[y][x] == 'y') {
+				glColor3f(0.8f, 0.2f, 0.2f);
 				drawStone(x * 100 + 50, y * 100 + 50, 20);
 			}
 		}
@@ -143,17 +151,37 @@ void stoneArray() {
 	
 }
 
-void clearPath() {
+void clearBoard() {
 	GLint x, y;
 	for (y = 0; y < 8; y++) {
 		for (x = 0; x < 8; x++) {
-			if (stones[y][x] == 'o') {
-				stones[y][x] = 'x';
+			if (board[y][x] == 'o' || board[y][x] == 'y') {
+
+				board[y][x] = 'x';
 			}
 		}
 	}
 }
+void gecis(int lastY, int lastX) {
+	forcedMove = 0;
+	if (turn)
+	{
+		if (board[lastY - 1][lastX] == 'x' && board[lastY + 1][lastX] == 's' ||
+			board[lastY][lastX - 1] == 'x' && board[lastY][lastX + 1] == 's' ||
+			board[lastY][lastX + 1] == 'x' && board[lastY, lastX - 1] == "s") {
+			forcedMove = 1;
+		}
 
+	}
+	else
+	{
+		if (board[lastY + 1][lastX] == 'x' && board[lastY - 1][lastX] == 'b' ||
+			board[lastY][lastX - 1] == 'x' && board[lastY][lastX + 1] == 'b' ||
+			board[lastY][lastX + 1] == 'x' && board[lastY, lastX - 1] == "b") {
+			forcedMove = 1;
+		}
+	}
+}
 void mouse(int button, int state, int x, int y)
 {
 	// Save the left button state
@@ -169,46 +197,116 @@ void mouse(int button, int state, int x, int y)
 			y /= 100;
 			cout << "x =" << x << endl;
 			cout << "y = " << y << endl;
-			cout << "þu var = " << stones[y][x] << endl;
-			if (stones[y][x] != 'x' && stones[y][x] != 'o') {
+			cout << " = " << board[y][x] << endl;
+			bool jump = false;
+			if (board[y][x] != 'x' && board[y][x] != 'o' && board[y][x] != 'y') {
 				
-				clearPath();
+				clearBoard();
 			}
 			
-			if (stones[y][x] == 's' && turn == 0) {
+			if (board[y][x] == 's' && turn == 0) {
 				selectedX = x;
 				selectedY = y;
-				if (stones[y - 1][x] == 'x') {
-					stones[y - 1][x] = 'o';
+				jump = false;
+
+				if (board[y - 1][x] == 'b' && board[y - 2][x] == 'x') {
+					board[y - 2][x] = 'y';
+					deadStoneX = x;
+					deadStoneY = y - 1;
+					jump = true;
+					forcedMove = 0;
 				}
-				if (x!= 7 && stones[y][x + 1] == 'x') {
-					stones[y][x + 1] = 'o';
+				if (x < 6 && board[y][x + 1] == 'b' && board[y][x + 2] == 'x') {
+					board[y][x + 2] = 'y';
+					deadStoneX = x + 1;
+					deadStoneY = y;
+					jump = true;
+					forcedMove = 0;
 				}
-				if (x != 0 && stones[y][x - 1] == 'x') {
-					stones[y][x - 1] = 'o';
+				if (x > 1 && board[y][x - 1] == 'b' && board[y][x - 2] == 'x') {
+					board[y][x - 2] = 'y';
+					deadStoneX = x - 1;
+					deadStoneY = y;
+					jump = true;
+					forcedMove = 0;
+				}
+
+				if (!jump && !forcedMove) {
+					if (board[y - 1][x] == 'x') {
+						board[y - 1][x] = 'o';
+					}
+					if (x != 7 && board[y][x + 1] == 'x') {
+						board[y][x + 1] = 'o';
+					}
+					if (x != 0 && board[y][x - 1] == 'x') {
+						board[y][x - 1] = 'o';
+					}
+				}
+
+				
+			}
+
+			else if (board[y][x] == 'b' && turn == 1) {
+				selectedX = x;
+				selectedY = y;
+				jump = false;
+
+				if (board[y + 1][x] == 's' && board[y + 2][x] == 'x') {
+					board[y + 2][x] = 'y';
+					deadStoneX = x;
+					deadStoneY = y + 1;
+					jump = true;
+					forcedMove = 0;
+				}
+				if (x < 6 && board[y][x + 1] == 's' && board[y][x + 2] == 'x') {
+					board[y][x + 2] = 'y';
+					deadStoneX = x + 1;
+					deadStoneY = y;
+					jump = true;
+					forcedMove = 0;
+				}
+				if (x > 1 && board[y][x - 1] == 's' && board[y][x - 2] == 'x') {
+					board[y][x - 2] = 'y';
+					deadStoneX = x - 1;
+					deadStoneY = y;
+					jump = true;
+					forcedMove = 0;
+				}
+
+				if (!jump && !forcedMove) {
+					if (board[y + 1][x] == 'x') {
+						board[y + 1][x] = 'o';
+					}
+					if (x != 7 && board[y][x + 1] == 'x') {
+						board[y][x + 1] = 'o';
+					}
+					if (x != 0 && board[y][x - 1] == 'x') {
+						board[y][x - 1] = 'o';
+					}
 				}
 			}
 
-			else if (stones[y][x] == 'b' && turn == 1) {
-				selectedX = x;
-				selectedY = y;
-				if (stones[y + 1][x] == 'x') {
-					stones[y + 1][x] = 'o';
-				}
-				if (x != 7 && stones[y][x + 1] == 'x') {
-					stones[y][x + 1] = 'o';
-				}
-				if (x != 0 && stones[y][x - 1] == 'x') {
-					stones[y][x - 1] = 'o';
-				}
-			}
-
-			else if (stones[y][x] == 'o') {
-				stones[y][x] = stones[selectedY][selectedX];
-				stones[selectedY][selectedX] = 'x';
+			else if (board[y][x] == 'o') {
+				board[y][x] = board[selectedY][selectedX];
+				board[selectedY][selectedX] = 'x';
 				selectedX = -1;
 				selectedY = -1;
-				clearPath();
+				clearBoard();
+				gecis(y, x);
+				if (turn == 0) turn = 1;
+				else turn = 0;
+			}
+
+			else if (board[y][x] == 'y') {
+				board[y][x] = board[selectedY][selectedX];
+				board[selectedY][selectedX] = 'x';
+				board[deadStoneY][deadStoneX] = 'x';
+				selectedX = -1;
+				selectedY = -1;
+				deadStoneY = -1;
+				deadStoneX = -1;
+				clearBoard();
+				gecis(y, x);
 				if (turn == 0) turn = 1;
 				else turn = 0;
 			}
@@ -222,6 +320,8 @@ void mouse(int button, int state, int x, int y)
 	
 	
 }
+
+
 
 int main(int argc, _TCHAR* argv[])
 {
