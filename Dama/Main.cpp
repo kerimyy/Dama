@@ -214,21 +214,18 @@ void mouse(int button, int state, int x, int y)
 					deadStoneX = x;
 					deadStoneY = y - 1;
 					jump = true;
-					forcedMove = 0;
 				}
 				if (x < 6 && board[y][x + 1] == 'b' && board[y][x + 2] == 'x') {
 					board[y][x + 2] = 'y';
 					deadStoneX = x + 1;
 					deadStoneY = y;
 					jump = true;
-					forcedMove = 0;
 				}
 				if (x > 1 && board[y][x - 1] == 'b' && board[y][x - 2] == 'x') {
 					board[y][x - 2] = 'y';
 					deadStoneX = x - 1;
 					deadStoneY = y;
 					jump = true;
-					forcedMove = 0;
 				}
 
 				if (!jump && !forcedMove) {
@@ -255,22 +252,19 @@ void mouse(int button, int state, int x, int y)
 					board[y + 2][x] = 'y';
 					deadStoneX = x;
 					deadStoneY = y + 1;
-					jump = true;
-					forcedMove = 0;
+					jump = true;					
 				}
 				if (x < 6 && board[y][x + 1] == 's' && board[y][x + 2] == 'x') {
 					board[y][x + 2] = 'y';
 					deadStoneX = x + 1;
 					deadStoneY = y;
-					jump = true;
-					forcedMove = 0;
+					jump = true;					
 				}
 				if (x > 1 && board[y][x - 1] == 's' && board[y][x - 2] == 'x') {
 					board[y][x - 2] = 'y';
 					deadStoneX = x - 1;
 					deadStoneY = y;
 					jump = true;
-					forcedMove = 0;
 				}
 
 				if (!jump && !forcedMove) {
