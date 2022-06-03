@@ -132,6 +132,32 @@ void update(void)
 				glColor3f(0.8f, 0.2f, 0.2f);
 				drawStone(x * 100 + 50, y * 100 + 50, 20);
 			}
+
+			else if (board[y][x] == 'd') {
+				glColor3f(0.0f, 0.0f, 0.0f);
+				drawStone(x * 100 + 50, y * 100 + 50, 35);
+
+				glBegin(GL_LINES);
+				glColor3f(0.4f, 0.7f, 0.4f);			
+				glVertex2i(x * 100 + 50, y * 100+15);
+				glVertex2i(x * 100 + 50, y * 100+85);
+				glVertex2i(x * 100 + 15, y * 100 + 50);
+				glVertex2i(x * 100 + 85, y * 100 + 50);
+				glEnd();
+			}
+
+			else if (board[y][x] == 'w') {
+				glColor3f(1.0f, 1.0f, 1.0f);
+				drawStone(x * 100 + 50, y * 100 + 50, 35);
+
+				glBegin(GL_LINES);
+				glColor3f(0.0f, 0.8f, 0.0f);
+				glVertex2i(x * 100 + 50, y * 100 + 15);
+				glVertex2i(x * 100 + 50, y * 100 + 85);
+				glVertex2i(x * 100 + 15, y * 100 + 50);
+				glVertex2i(x * 100 + 85, y * 100 + 50);
+				glEnd();
+			}
 		}
 	}
 
@@ -141,7 +167,28 @@ void update(void)
 	glFlush();	
 }
 
+void clearO() {
+	GLint x, y;
+	for (y = 0; y < 8; y++) {
+		for (x = 0; x < 8; x++) {
+			if (board[y][x] == 'o') {
 
+				board[y][x] = 'x';
+			}
+		}
+	}
+}
+void clearY() {
+	GLint x, y;
+	for (y = 0; y < 8; y++) {
+		for (x = 0; x < 8; x++) {
+			if (board[y][x] == 'y') {
+
+				board[y][x] = 'x';
+			}
+		}
+	}
+}
 
 void clearBoard() {
 	GLint x, y;
@@ -158,18 +205,21 @@ void forceControl(int lastY, int lastX) {
 	forcedMove = 0;
 	if (turn)
 	{
-		if (board[lastY - 1][lastX] == 'x' && board[lastY + 1][lastX] == 's' ||
-			board[lastY][lastX - 1] == 'x' && board[lastY][lastX + 1] == 's' ||
-			board[lastY][lastX + 1] == 'x' && board[lastY, lastX - 1] == "s") {
+		
+		if (board[lastY - 1][lastX] == 'x' && board[lastY + 1][lastX] == 's' && lastY !=0 && lastY != 7 ||
+			board[lastY][lastX - 1] == 'x' && board[lastY][lastX + 1] == 's' && lastX != 0 && lastX != 7 ||
+			board[lastY][lastX + 1] == 'x' && board[lastY, lastX - 1] == "s" && lastX != 0 && lastX != 7) {
 			forcedMove = 1;
 		}
+		
+
 
 	}
 	else
 	{
-		if (board[lastY + 1][lastX] == 'x' && board[lastY - 1][lastX] == 'b' ||
-			board[lastY][lastX - 1] == 'x' && board[lastY][lastX + 1] == 'b' ||
-			board[lastY][lastX + 1] == 'x' && board[lastY, lastX - 1] == "b") {
+		if (board[lastY + 1][lastX] == 'x' && board[lastY - 1][lastX] == 'b' && lastY != 0 && lastY != 7 ||
+			board[lastY][lastX - 1] == 'x' && board[lastY][lastX + 1] == 'b' && lastX != 0 && lastX != 7 ||
+			board[lastY][lastX + 1] == 'x' && board[lastY, lastX - 1] == "b" && lastX != 0 && lastX != 7) {
 			forcedMove = 1;
 		}
 	}
@@ -270,7 +320,16 @@ void mouse(int button, int state, int x, int y)
 			}
 
 			else if (board[y][x] == 'o') {
-				board[y][x] = board[selectedY][selectedX];
+				if (y == 0 && board[selectedY][selectedX] == 's') {
+					board[y][x] = 'd';
+				}
+				else if (y == 7 && board[selectedY][selectedX] == 'b') {
+					board[y][x] = 'w';
+				}
+				else {
+					board[y][x] = board[selectedY][selectedX];
+				}
+				
 				board[selectedY][selectedX] = 'x';
 				selectedX = -1;
 				selectedY = -1;
@@ -281,7 +340,15 @@ void mouse(int button, int state, int x, int y)
 			}
 
 			else if (board[y][x] == 'y') {
-				board[y][x] = board[selectedY][selectedX];
+				if (y == 0 && board[selectedY][selectedX] == 's') {
+					board[y][x] = 'd';
+				}
+				else if (y == 7 && board[selectedY][selectedX] == 'b') {
+					board[y][x] = 'w';
+				}
+				else {
+					board[y][x] = board[selectedY][selectedX];
+				}
 				board[selectedY][selectedX] = 'x';
 				board[deadStoneY][deadStoneX] = 'x';
 				selectedX = -1;
@@ -293,7 +360,7 @@ void mouse(int button, int state, int x, int y)
 				
 				if (turn)
 				{
-					if (board[y + 1][x] == 's' && board[y + 2][x] == 'x') {
+					if (board[y + 1][x] == 's' && board[y + 2][x] == 'x' && y < 6) {
 						board[y + 2][x] = 'y';
 						deadStoneX = x;
 						deadStoneY = y + 1;
@@ -301,7 +368,7 @@ void mouse(int button, int state, int x, int y)
 						selectedY = y;
 						jump = true;
 					}
-					if (x < 6 && board[y][x + 1] == 's' && board[y][x + 2] == 'x') {
+					if (x < 6 && board[y][x + 1] == 's' && board[y][x + 2] == 'x' && x<6) {
 						board[y][x + 2] = 'y';
 						deadStoneX = x + 1;
 						deadStoneY = y;
@@ -309,7 +376,7 @@ void mouse(int button, int state, int x, int y)
 						selectedY = y;
 						jump = true;
 					}
-					if (x > 1 && board[y][x - 1] == 's' && board[y][x - 2] == 'x') {
+					if (x > 1 && board[y][x - 1] == 's' && board[y][x - 2] == 'x' && x > 1) {
 						board[y][x - 2] = 'y';
 						deadStoneX = x - 1;
 						deadStoneY = y;
@@ -320,7 +387,7 @@ void mouse(int button, int state, int x, int y)
 				}
 				else
 				{
-					if (board[y - 1][x] == 'b' && board[y - 2][x] == 'x') {
+					if (board[y - 1][x] == 'b' && board[y - 2][x] == 'x' && y > 1) {
 						board[y - 2][x] = 'y';
 						deadStoneX = x;
 						deadStoneY = y - 1;
@@ -328,7 +395,7 @@ void mouse(int button, int state, int x, int y)
 						selectedY = y;
 						jump = true;
 					}
-					if (x < 6 && board[y][x + 1] == 'b' && board[y][x + 2] == 'x') {
+					if (x < 6 && board[y][x + 1] == 'b' && board[y][x + 2] == 'x' && x < 6) {
 						board[y][x + 2] = 'y';
 						deadStoneX = x + 1;
 						deadStoneY = y;
@@ -336,7 +403,7 @@ void mouse(int button, int state, int x, int y)
 						selectedY = y;
 						jump = true;
 					}
-					if (x > 1 && board[y][x - 1] == 'b' && board[y][x - 2] == 'x') {
+					if (x > 1 && board[y][x - 1] == 'b' && board[y][x - 2] == 'x' && x > 1) {
 						board[y][x - 2] = 'y';
 						deadStoneX = x - 1;
 						deadStoneY = y;
@@ -355,6 +422,133 @@ void mouse(int button, int state, int x, int y)
 				
 
 			}
+
+			else if (board[y][x] == 'd') {
+				selectedX = x;
+				selectedY = y;
+				int dx = x;
+				int dy = y-1;
+				bool jump = false;
+
+				while (board[dy][dx] == 'x' && dy >= 0) {					
+					board[dy][dx] = 'o';
+					dy--;
+				}
+				if (board[dy][dx] == 'b' && board[dy - 1][dx] == 'x') {
+					clearO();
+					board[dy - 1][dx] = 'y';
+					jump = true;
+					deadStoneX = dx;
+					deadStoneY = dy;
+				}
+
+				dx = x;
+				dy = y + 1;
+				while (board[dy][dx] == 'x' && dy <= 7) {
+					if(!jump)board[dy][dx] = 'o';
+					dy++;
+				}
+				if (board[dy][dx] == 'b' && board[dy + 1][dx] == 'x') {
+					clearO();
+					board[dy + 1][dx] = 'y';
+					jump = true;
+					deadStoneX = dx;
+					deadStoneY = dy;
+				}
+
+				dx = x+1;
+				dy = y ;
+				while (board[dy][dx] == 'x' && dx <= 7) {
+					if (!jump)board[dy][dx] = 'o';
+					dx++;
+				}
+				if (board[dy][dx] == 'b' && board[dy][dx+1] == 'x') {
+					clearO();
+					board[dy][dx+1] = 'y';
+					jump = true;
+					deadStoneX = dx;
+					deadStoneY = dy;
+				}
+
+				dx = x-1;
+				dy = y ;
+				while (board[dy][dx] == 'x' && dx >= 0) {
+					if (!jump)board[dy][dx] = 'o';
+					dx--;
+				}
+				if (board[dy][dx] == 'b' && board[dy][dx - 1] == 'x') {
+					clearO();
+					board[dy][dx - 1] = 'y';
+					deadStoneX = dx;
+					deadStoneY = dy;
+				}
+
+			}
+
+			else if (board[y][x] == 'w') {
+				selectedX = x;
+				selectedY = y;
+				int dx = x;
+				int dy = y - 1;
+				bool jump = false;
+
+				while (board[dy][dx] == 'x' && dy >= 0) {
+					board[dy][dx] = 'o';
+					dy--;
+				}
+				if (board[dy][dx] == 's' && board[dy - 1][dx] == 'x') {
+					clearO();
+					board[dy - 1][dx] = 'y';
+					jump = true;
+					deadStoneX = dx;
+					deadStoneY = dy;
+				}
+
+				dx = x;
+				dy = y + 1;
+				while (board[dy][dx] == 'x' && dy <= 7) {
+					if (!jump)board[dy][dx] = 'o';
+					dy++;
+				}
+				if (board[dy][dx] == 's' && board[dy + 1][dx] == 'x') {
+					clearO();
+					board[dy + 1][dx] = 'y';
+					jump = true;
+					deadStoneX = dx;
+					deadStoneY = dy;
+				}
+
+				dx = x + 1;
+				dy = y;
+				while (board[dy][dx] == 'x' && dx <= 7) {
+					if (!jump)board[dy][dx] = 'o';
+					dx++;
+				}
+				if (board[dy][dx] == 's' && board[dy][dx + 1] == 'x') {
+					clearO();
+					board[dy][dx + 1] = 'y';
+					jump = true;
+					deadStoneX = dx;
+					deadStoneY = dy;
+				}
+
+				dx = x - 1;
+				dy = y;
+				while (board[dy][dx] == 'x' && dx >= 0) {
+					if (!jump)board[dy][dx] = 'o';
+					dx--;
+				}
+				if (board[dy][dx] == 's' && board[dy][dx - 1] == 'x') {
+					clearO();
+					board[dy][dx - 1] = 'y';
+					deadStoneX = dx;
+					deadStoneY = dy;
+				}
+
+			}
+
+
+
 			
 			
 		}
