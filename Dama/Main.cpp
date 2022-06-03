@@ -7,7 +7,6 @@
 #include <windows.h>
 using namespace std;
 
-const double IKI_PI = 6.2831853;
 
 const int windowWidth = 800;
 const int windowHeight = 800;
@@ -33,17 +32,17 @@ bool forcedMove = 0;
 
 void drawSquare(GLint x1, GLint y1, GLint x2, GLint y2, GLint x3, GLint y3, GLint x4, GLint y4,GLboolean selected)
 {
-	// if color is 0 then draw white box and change value of color = 1
+	
 	if (c == 0)
 	{
-		 // white color value is 1 1 1
+		 
 		glColor3f(0.7f, 0.7f, 0.5f);
 		c = 1;
 	}
-	// if color is 1 then draw black box and change value of color = 0
+	
 	else
 	{
-		glColor3f(0.3f, 0.15f, 0.02f); // black color value is 0 0 0
+		glColor3f(0.3f, 0.15f, 0.02f); 
 		c = 0;
 	}
 
@@ -85,9 +84,9 @@ void chessboard()
 
 void drawStone(GLfloat x, GLfloat y, GLfloat radius) {
 	int i;
-	int triangleAmount = 30; 
+	int triangleAmount = 40; 
 	
-	GLfloat twicePi = IKI_PI;
+	GLfloat twicePi = 6.2831853;
 	glBegin(GL_TRIANGLE_FAN);
 	glVertex2f(x, y); // center of circle
 	for (i = 0; i <= triangleAmount; i++) {
@@ -102,8 +101,8 @@ void drawStone(GLfloat x, GLfloat y, GLfloat radius) {
 
 void init(void)
 {
-	//glClearColor(1.0, 1.0, 1.0, 0.0);		//set display window color to white
-	glMatrixMode(GL_PROJECTION);		//set projection parameters
+	glClearColor(1.0, 1.0, 1.0, 0.0);		
+	glMatrixMode(GL_PROJECTION);		
 	gluOrtho2D(0, windowWidth, windowHeight, 0);
 
 }
@@ -137,19 +136,12 @@ void update(void)
 	}
 
 
-	//glColor3f(0.0f, 1.0f, 0.5f);
-	//glBegin(GL_LINES);
-				//set line segment color to green
-	//glVertex2i(180, 145);				//specify line segment geometry
-	//glVertex2i(10, 15);
-	//glEnd();
 
-	glFlush();	//process all openGL routines as quickly as possible 
+
+	glFlush();	
 }
 
-void stoneArray() {
-	
-}
+
 
 void clearBoard() {
 	GLint x, y;
@@ -162,7 +154,7 @@ void clearBoard() {
 		}
 	}
 }
-void gecis(int lastY, int lastX) {
+void forceControl(int lastY, int lastX) {
 	forcedMove = 0;
 	if (turn)
 	{
@@ -184,15 +176,12 @@ void gecis(int lastY, int lastX) {
 }
 void mouse(int button, int state, int x, int y)
 {
-	// Save the left button state
+
 	if (button == GLUT_LEFT_BUTTON)
 	{	
 		
 		if (state == GLUT_DOWN) {
 
-			//glClear(GL_COLOR_BUFFER_BIT);
-			//chessboard();
-			//clearPath();
 			x /= 100;
 			y /= 100;
 			cout << "x =" << x << endl;
@@ -286,7 +275,7 @@ void mouse(int button, int state, int x, int y)
 				selectedX = -1;
 				selectedY = -1;
 				clearBoard();
-				gecis(y, x);
+				forceControl(y, x);
 				if (turn == 0) turn = 1;
 				else turn = 0;
 			}
@@ -300,9 +289,71 @@ void mouse(int button, int state, int x, int y)
 				deadStoneY = -1;
 				deadStoneX = -1;
 				clearBoard();
-				gecis(y, x);
-				if (turn == 0) turn = 1;
-				else turn = 0;
+				
+				
+				if (turn)
+				{
+					if (board[y + 1][x] == 's' && board[y + 2][x] == 'x') {
+						board[y + 2][x] = 'y';
+						deadStoneX = x;
+						deadStoneY = y + 1;
+						selectedX = x;
+						selectedY = y;
+						jump = true;
+					}
+					if (x < 6 && board[y][x + 1] == 's' && board[y][x + 2] == 'x') {
+						board[y][x + 2] = 'y';
+						deadStoneX = x + 1;
+						deadStoneY = y;
+						selectedX = x;
+						selectedY = y;
+						jump = true;
+					}
+					if (x > 1 && board[y][x - 1] == 's' && board[y][x - 2] == 'x') {
+						board[y][x - 2] = 'y';
+						deadStoneX = x - 1;
+						deadStoneY = y;
+						selectedX = x;
+						selectedY = y;
+						jump = true;
+					}
+				}
+				else
+				{
+					if (board[y - 1][x] == 'b' && board[y - 2][x] == 'x') {
+						board[y - 2][x] = 'y';
+						deadStoneX = x;
+						deadStoneY = y - 1;
+						selectedX = x;
+						selectedY = y;
+						jump = true;
+					}
+					if (x < 6 && board[y][x + 1] == 'b' && board[y][x + 2] == 'x') {
+						board[y][x + 2] = 'y';
+						deadStoneX = x + 1;
+						deadStoneY = y;
+						selectedX = x;
+						selectedY = y;
+						jump = true;
+					}
+					if (x > 1 && board[y][x - 1] == 'b' && board[y][x - 2] == 'x') {
+						board[y][x - 2] = 'y';
+						deadStoneX = x - 1;
+						deadStoneY = y;
+						selectedX = x;
+						selectedY = y;
+						jump = true;
+					}
+				}
+
+				
+				if (!jump) {
+					forceControl(y, x);
+					if (turn == 0) turn = 1;
+					else turn = 0;
+				}
+				
+
 			}
 			
 			
@@ -321,7 +372,7 @@ int main(int argc, _TCHAR* argv[])
 {
 	glutInit(&argc, (char**)argv);  // Initialize GLUT
 	glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB); //set display mode
-	glutInitWindowPosition(50, 100); // Position the window's initial top-left corner
+	glutInitWindowPosition(300, 100); // Position the window's initial top-left corner
 	glutInitWindowSize(windowWidth, windowHeight);   // Set the window's initial width & height
 	glutCreateWindow("Dama");
 	glutMouseFunc(mouse);	// Create a window with the given title
